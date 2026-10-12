@@ -130,7 +130,7 @@
     }
 
     /* Input & Button */
-    input[type="text"] {
+    input[type="text"], input[type="password"] {
       width: 100%;
       padding: 14px 18px;
       border-radius: 12px;
@@ -143,7 +143,7 @@
       transition: border-color 0.2s;
     }
 
-    input[type="text"]:focus {
+    input[type="text"]:focus, input[type="password"]:focus {
       border-color: var(--primary);
     }
 
@@ -162,6 +162,20 @@
 
     .btn-submit:hover {
       background: var(--primary-hover);
+    }
+
+    .btn-group-modal {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
     }
 
     /* Shake Animation for Wrong Answer */
@@ -306,11 +320,17 @@
           </tbody>
         </table>
       </div>
-      <button class="btn-submit" onclick="downloadCSV()" style="margin-top: 20px; background: #059669;">엑셀(CSV) 다운로드</button>
+      <div class="btn-group-modal">
+        <button class="btn-submit" onclick="downloadCSV()" style="background: #059669;">엑셀(CSV) 다운로드</button>
+        <button class="btn-submit btn-danger" onclick="clearCompletedList()">명단 초기화</button>
+      </div>
     </div>
   </div>
 
   <script>
+    // 관리자 전용 비밀번호 설정 (원하시는 비밀번호로 수정 가능)
+    const ADMIN_PASSWORD = "4681";
+
     // Default Questions & Background Images
     let defaultQuestions = [
       {
@@ -540,6 +560,22 @@
           </tr>
         `;
       });
+    }
+
+    // Clear Completed List Data (With Password Verification)
+    function clearCompletedList() {
+      const inputPassword = prompt("🔒 관리자 비밀번호를 입력하세요:");
+      if (inputPassword === null) return; // 취소 버튼을 누른 경우
+
+      if (inputPassword === ADMIN_PASSWORD) {
+        if (confirm("정말로 완료자 명단을 전체 삭제하시겠습니까? (복구할 수 없습니다)")) {
+          localStorage.removeItem('training_completed_users');
+          renderCompletedTable();
+          alert("완료자 명단이 완전히 초기화되었습니다.");
+        }
+      } else {
+        alert("❌ 비밀번호가 올바르지 않습니다.");
+      }
     }
 
     // Export Data to CSV
