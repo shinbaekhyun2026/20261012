@@ -329,10 +329,9 @@
 
   <script>
     // ==========================================
-    // ⚙️ [설정 수정완료] 구글 설문지 연동 정보
+    // 🚀 [구글 앱스 스크립트 직통 연동 주소]
     // ==========================================
-    const FORM_ID = "1FAIpQLSdBRVpLnFg-xsQwvz0fKDqSgzPQMP7VhGUH-QARq_3VkPkGeg";
-    const ENTRY_ID = "entry.974976971"; // ★ 실제 성명 입력란 ID로 수정 완료
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwTb_bp9qfoDWLUemiY5RKTSUBclUbTZenwIYtoayxyvF2_a6fEyPSu4gPejocWM5-/exec";
     const ADMIN_PASSWORD = "4681";
 
     const defaultQuestions = [
@@ -401,7 +400,7 @@
       const quizContent = document.getElementById('quizContent');
       if (!quizContent) return;
 
-      // 1번 문제 단계에서만 성함 입력 상자 표시
+      // 1번 문제 단계에서 성함 입력
       const nameBoxHtml = currentStep === 0 ? `
         <div style="text-align: left; margin-bottom: 15px;">
           <label style="font-size:0.85rem; color:#94a3b8; display:block; margin-bottom:5px;">👤 응답자 성함</label>
@@ -423,7 +422,6 @@
     }
 
     function checkAnswer() {
-      // 1번 문제 제출 시 성함 저장 및 검사
       if (currentStep === 0) {
         const nameInput = document.getElementById('userInputName');
         if (nameInput) {
@@ -461,7 +459,7 @@
     }
 
     function renderSuccessStep() {
-      // 퀴즈 완료 시 구글 설문지로 성함 전송
+      // 퀴즈 완료 시 Apps Script 직통 전송
       saveCompletionRecord(userName);
 
       document.body.style.backgroundImage = `url('https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80')`;
@@ -479,7 +477,7 @@
       `;
     }
 
-    // ★ 구글 설문지로 성함 실시간 제출
+    // ★ 앱스 스크립트로 성함 실시간 직통 전송
     function saveCompletionRecord(name) {
       if (!name) return;
 
@@ -494,37 +492,19 @@
         console.error("로컬 저장 오류:", e);
       }
 
-      // 2. 구글 설문지 POST 전송
-      const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse`;
-      
-      let iframe = document.getElementById('hidden_iframe');
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.name = 'hidden_iframe';
-        iframe.id = 'hidden_iframe';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-      }
-
-      const form = document.createElement('form');
-      form.action = formUrl;
-      form.method = 'POST';
-      form.target = 'hidden_iframe';
-
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.setAttribute('name', ENTRY_ID); // entry.974976971
-      input.value = name;
-
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
-      
-      setTimeout(() => {
-        document.body.removeChild(form);
-      }, 500);
-      
-      console.log("성함(" + name + ") 구글 설문지 제출 완료");
+      // 2. Apps Script 웹앱 전송
+      fetch(GAS_WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `name=${encodeURIComponent(name)}`
+      }).then(() => {
+        console.log("스프레드시트로 성함 전송 성공!");
+      }).catch(err => {
+        console.error("전송 에러:", err);
+      });
     }
 
     function openModal(modalId) {
