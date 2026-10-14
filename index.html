@@ -329,7 +329,7 @@
 
   <script>
     // ==========================================
-    // ⚙️ [설정] 구글 설문지 정보 연동
+    // ⚙️ [설정] 구글 설문지 연동 정보
     // ==========================================
     const FORM_ID = "1HgeVhSOF87sS2nYXcT-eU-3uzy-CFiIyoPU3tiLm348";
     const ENTRY_ID = "entry.808143547";
@@ -401,7 +401,7 @@
       const quizContent = document.getElementById('quizContent');
       if (!quizContent) return;
 
-      // 1번 문제일 때만 성함 입력 상자 노출
+      // 1번 문제 단계에서만 성함 입력 상자 표시
       const nameBoxHtml = currentStep === 0 ? `
         <div style="text-align: left; margin-bottom: 15px;">
           <label style="font-size:0.85rem; color:#94a3b8; display:block; margin-bottom:5px;">👤 응답자 성함</label>
@@ -461,7 +461,7 @@
     }
 
     function renderSuccessStep() {
-      // 퀴즈 완수 시 구글 설문지로 전송 실행
+      // 퀴즈 완료 시 구글 설문지로 전송
       saveCompletionRecord(userName);
 
       document.body.style.backgroundImage = `url('https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80')`;
@@ -479,11 +479,11 @@
       `;
     }
 
-    // ★ 구글 설문지 100% 성공 보장 전송 함수 (숨겨진 Form 방식)
+    // ★ 구글 설문지 전송 핵심 함수 (404 경로 수정완료)
     function saveCompletionRecord(name) {
       if (!name) return;
 
-      // 1. 개별 기기 백업 저장
+      // 1. 브라우저 로컬 저장소 백업
       try {
         let records = JSON.parse(localStorage.getItem('training_completed_users')) || [];
         const now = new Date();
@@ -494,8 +494,8 @@
         console.error("로컬 저장 오류:", e);
       }
 
-      // 2. 구글 설문지로 전송 (숨겨진 iframe + Form 제출 방식)
-      const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse`;
+      // 2. 구글 설문지 백엔드로 실시간 전송 (올바른 경로 적용)
+      const formUrl = `https://docs.google.com/forms/d/${FORM_ID}/formResponse`;
       
       let iframe = document.getElementById('hidden_iframe');
       if (!iframe) {
