@@ -288,7 +288,7 @@
   <!-- Admin Controls -->
   <div class="admin-bar">
     <button class="admin-btn" onclick="openModal('editModal')">⚙️ 문제 편집</button>
-    <button class="admin-btn" onclick="openModal('listModal')">📊 완료자 명단(내 PC)</button>
+    <button class="admin-btn" onclick="openModal('listModal')">📊 완료자 명단</button>
   </div>
 
   <!-- Main Card -->
@@ -320,7 +320,7 @@
   <div class="modal" id="listModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>📊 완료자 명단 (로컬 저장소)</h3>
+        <h3>📊 퀴즈 완료자 명단</h3>
         <button class="close-btn" onclick="closeModal('listModal')">&times;</button>
       </div>
       <div class="table-container">
@@ -345,11 +345,6 @@
   </div>
 
   <script>
-    // ==========================================
-    // ⚙️ [설정 완료] 구글 설문지 정보 연동
-    // ==========================================
-    const FORM_ID = "1HgeVhSOF87sS2nYXcT-eU-3uzy-CFiIyoPU3tiLm348";
-    const ENTRY_ID = "entry.808143547";
     const ADMIN_PASSWORD = "4681";
 
     const defaultQuestions = [
@@ -502,34 +497,16 @@
       `;
     }
 
-    // ★ 구글 설문지 실시간 자동 제출 함수
     function saveCompletionRecord(name) {
-      // 1. 개별 기기 백업 저장
       try {
         let records = JSON.parse(localStorage.getItem('training_completed_users')) || [];
         const now = new Date();
         const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+        
         records.push({ name: name, time: timeStr });
         localStorage.setItem('training_completed_users', JSON.stringify(records));
       } catch (e) {
-        console.error("로컬 저장 오류:", e);
-      }
-
-      // 2. 구글 설문지 백엔드로 실시간 자동 전송
-      if (FORM_ID) {
-        const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse`;
-        const formData = new FormData();
-        formData.append(ENTRY_ID, name);
-
-        fetch(formUrl, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: formData
-        }).then(() => {
-          console.log("구글 설문지 전송 완료");
-        }).catch(err => {
-          console.error("구글 설문지 전송 실패:", err);
-        });
+        console.error("저장 오류:", e);
       }
     }
 
@@ -601,7 +578,7 @@
       tbody.innerHTML = '';
 
       if (records.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8;">아직 이 기기에서 완료한 기록이 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#94a3b8;">아직 완료자가 없습니다.</td></tr>`;
         return;
       }
 
