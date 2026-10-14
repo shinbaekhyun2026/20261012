@@ -329,10 +329,10 @@
 
   <script>
     // ==========================================
-    // ⚙️ [설정] 구글 설문지 연동 정보
+    // ⚙️ [설정 수정완료] 구글 설문지 연동 정보
     // ==========================================
     const FORM_ID = "1FAIpQLSdBRVpLnFg-xsQwvz0fKDqSgzPQMP7VhGUH-QARq_3VkPkGeg";
-    const ENTRY_ID = "entry.808143547";
+    const ENTRY_ID = "entry.974976971"; // ★ 실제 성명 입력란 ID로 수정 완료
     const ADMIN_PASSWORD = "4681";
 
     const defaultQuestions = [
@@ -423,7 +423,7 @@
     }
 
     function checkAnswer() {
-      // 1번 문제 제출 시 성함 유효성 검사 및 저장
+      // 1번 문제 제출 시 성함 저장 및 검사
       if (currentStep === 0) {
         const nameInput = document.getElementById('userInputName');
         if (nameInput) {
@@ -461,7 +461,7 @@
     }
 
     function renderSuccessStep() {
-      // 퀴즈 완료 시 성함 데이터와 함께 구글 설문지로 전송
+      // 퀴즈 완료 시 구글 설문지로 성함 전송
       saveCompletionRecord(userName);
 
       document.body.style.backgroundImage = `url('https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80')`;
@@ -479,7 +479,7 @@
       `;
     }
 
-    // ★ 구글 설문지로 성함 전송
+    // ★ 구글 설문지로 성함 실시간 제출
     function saveCompletionRecord(name) {
       if (!name) return;
 
@@ -494,7 +494,7 @@
         console.error("로컬 저장 오류:", e);
       }
 
-      // 2. 구글 설문지 보이지 않는 폼 제출 방식 전송
+      // 2. 구글 설문지 POST 전송
       const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse`;
       
       let iframe = document.getElementById('hidden_iframe');
@@ -513,7 +513,7 @@
 
       const input = document.createElement('input');
       input.type = 'hidden';
-      input.setAttribute('name', ENTRY_ID); // entry.808143547 이름 지정
+      input.setAttribute('name', ENTRY_ID); // entry.974976971
       input.value = name;
 
       form.appendChild(input);
@@ -524,7 +524,7 @@
         document.body.removeChild(form);
       }, 500);
       
-      console.log("성함(" + name + ") 구글 설문지 전송 실행 완료");
+      console.log("성함(" + name + ") 구글 설문지 제출 완료");
     }
 
     function openModal(modalId) {
