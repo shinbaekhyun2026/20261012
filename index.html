@@ -329,9 +329,9 @@
 
   <script>
     // ==========================================
-    // 🚀 [해결방법 1] 보완된 앱스 스크립트 웹 앱 URL
+    // 🚀 [최신 구글 앱스 스크립트 웹 앱 URL]
     // ==========================================
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwg7XUv7GuMZzZ0dqPYMQpLOSRAzYuCQZFOg1MYLGE0zD4UUSkgSvgeF81RBmm2jkqs/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx-SL8ERe613IfYIuNYvdCgq37IeoFDQynVYQpLbRL-YDDgH-EqHYLlA3-OciKkH2MX/exec";
     const ADMIN_PASSWORD = "4681";
 
     const defaultQuestions = [
@@ -459,7 +459,7 @@
     }
 
     function renderSuccessStep() {
-      // 퀴즈 완료 시 Apps Script로 JSON 데이터 전송
+      // 퀴즈 완료 시 구글 스프레드시트로 전송
       saveCompletionRecord(userName);
 
       document.body.style.backgroundImage = `url('https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80')`;
@@ -477,7 +477,7 @@
       `;
     }
 
-    // ★ 해결방법 1: JSON 방식 파싱 전송
+    // ★ Form + Hidden Iframe 방식 (CORS 보안 차단 우회)
     function saveCompletionRecord(name) {
       if (!name) return;
 
@@ -492,18 +492,36 @@
         console.error("로컬 저장 오류:", e);
       }
 
-      // 2. Apps Script 웹앱 전송 (text/plain 처리로 CORS 이슈 우회)
-      fetch(GAS_WEB_APP_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify({ name: name })
-      }).then(() => {
-        console.log("스프레드시트 전송 완료:", name);
-      }).catch(err => {
-        console.error("전송 에러:", err);
-      });
+      // 2. 숨겨진 프레임 생성
+      let iframe = document.getElementById('gas_hidden_iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.name = 'gas_hidden_iframe';
+        iframe.id = 'gas_hidden_iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+      }
+
+      // 3. 폼 제출
+      const form = document.createElement('form');
+      form.action = GAS_WEB_APP_URL;
+      form.method = 'POST';
+      form.target = 'gas_hidden_iframe';
+
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'name';
+      input.value = name;
+
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+
+      setTimeout(() => {
+        if (form && form.parentNode) {
+          document.body.removeChild(form);
+        }
+      }, 1000);
     }
 
     function openModal(modalId) {
