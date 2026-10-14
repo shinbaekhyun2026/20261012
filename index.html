@@ -270,8 +270,6 @@
 
   <!-- Admin Controls -->
   <div class="admin-bar">
-    <button class="admin-btn" onclick="resetQuestionsToDefault()">🔄 문제 초기화</button>
-    <button class="admin-btn" onclick="openModal('editModal')">⚙️ 문제 편집</button>
     <button class="admin-btn" onclick="openModal('listModal')">📊 완료자 명단(내 PC)</button>
   </div>
 
@@ -285,18 +283,6 @@
 
     <div id="quizContent">
       <!-- Dynamic Content Loaded via JS -->
-    </div>
-  </div>
-
-  <!-- Edit Questions Modal -->
-  <div class="modal" id="editModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>⚙️ 문제 및 정답 편집</h3>
-        <button class="close-btn" onclick="closeModal('editModal')">&times;</button>
-      </div>
-      <div id="editForm"></div>
-      <button class="btn-submit" onclick="saveQuestions()" style="margin-top: 10px;">저장하기</button>
     </div>
   </div>
 
@@ -330,13 +316,13 @@
 
   <script>
     // ==========================================
-    // 🚀 [최신 구글 앱스 스크립트 웹 앱 URL]
+    // 🚀 [구글 앱스 스크립트 웹 앱 URL 및 문제 데이터 고정]
     // ==========================================
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx8iWp4mRJ_UXG4Hx23hcAh-MbDOl_ttiP4r5hs7BhNNzWxwB1NVdYFLXevj7C4QUXg/exec";
     const ADMIN_PASSWORD = "4681";
-    const CURRENT_VERSION = "v_nutrition_v1"; // 버전 변경 시 옛날 로컬 데이터 자동 삭제
 
-    const defaultQuestions = [
+    // 이전 캐시 무시를 위해 localStorage를 거치지 않고 이 문제를 직결로 사용
+    const questions = [
       {
         question: "1번 문제",
         desc: "청소년기 식행동 중 고열량 저영양의 원인이 되는 식행동은 무엇인가요?",
@@ -360,49 +346,13 @@
       }
     ];
 
-    let questions = defaultQuestions;
-
-    function loadQuestions() {
-      try {
-        const savedVersion = localStorage.getItem('training_quiz_version');
-        if (savedVersion !== CURRENT_VERSION) {
-          // 옛날 버전이면 이전 로컬 데이터 초기화 후 새 기본 데이터 사용
-          localStorage.removeItem('training_questions');
-          localStorage.setItem('training_quiz_version', CURRENT_VERSION);
-          questions = defaultQuestions;
-          return;
-        }
-
-        const saved = localStorage.getItem('training_questions');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].question) {
-            questions = parsed;
-            return;
-          }
-        }
-      } catch (e) {
-        console.error("저장된 문제 읽기 실패:", e);
-      }
-      questions = defaultQuestions;
-    }
-
-    function resetQuestionsToDefault() {
-      if (confirm("기본식행동 문제(3개)로 문제를 초기화하시겠습니까?")) {
-        localStorage.removeItem('training_questions');
-        localStorage.setItem('training_quiz_version', CURRENT_VERSION);
-        questions = defaultQuestions;
-        currentStep = 0;
-        renderQuestionStep();
-        alert("새 문제로 초기화되었습니다!");
-      }
-    }
+    // 실행 시 이전 저장값 무조건 지우기
+    localStorage.removeItem('training_questions');
 
     let currentStep = 0;
     let userName = "";
 
     function init() {
-      loadQuestions();
       renderQuestionStep();
     }
 
@@ -422,7 +372,6 @@
       const quizContent = document.getElementById('quizContent');
       if (!quizContent) return;
 
-      // 1번 문제 단계에서 성함 입력
       const nameBoxHtml = currentStep === 0 ? `
         <div style="text-align: left; margin-bottom: 15px;">
           <label style="font-size:0.85rem; color:#94a3b8; display:block; margin-bottom:5px;">👤 응답자 성함</label>
@@ -481,7 +430,6 @@
     }
 
     function renderSuccessStep() {
-      // 퀴즈 완료 시 구글 스프레드시트로 전송
       saveCompletionRecord(userName);
 
       document.body.style.backgroundImage = `url('https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1200&q=80')`;
@@ -499,11 +447,9 @@
       `;
     }
 
-    // ★ Form + Hidden Iframe 방식 (CORS 제약 차단 완벽 회피)
     function saveCompletionRecord(name) {
       if (!name) return;
 
-      // 1. 브라우저 로컬 저장소 백업
       try {
         let records = JSON.parse(localStorage.getItem('training_completed_users')) || [];
         const now = new Date();
@@ -514,7 +460,6 @@
         console.error("로컬 저장 오류:", e);
       }
 
-      // 2. 숨겨진 프레임 생성
       let iframe = document.getElementById('gas_hidden_iframe');
       if (!iframe) {
         iframe = document.createElement('iframe');
@@ -524,7 +469,6 @@
         document.body.appendChild(iframe);
       }
 
-      // 3. 폼 제출
       const form = document.createElement('form');
       form.action = GAS_WEB_APP_URL;
       form.method = 'POST';
@@ -547,7 +491,6 @@
     }
 
     function openModal(modalId) {
-      if (modalId === 'editModal') renderEditForm();
       if (modalId === 'listModal') renderCompletedTable();
       const el = document.getElementById(modalId);
       if (el) el.style.display = 'flex';
@@ -556,49 +499,6 @@
     function closeModal(modalId) {
       const el = document.getElementById(modalId);
       if (el) el.style.display = 'none';
-    }
-
-    function renderEditForm() {
-      const container = document.getElementById('editForm');
-      if (!container) return;
-      container.innerHTML = '';
-
-      questions.forEach((q, idx) => {
-        container.innerHTML += `
-          <div class="edit-group">
-            <h4>[${idx + 1}번 문제]</h4>
-            <label>제목/단계 이름</label>
-            <input type="text" id="edit_title_${idx}" value="${q.question}">
-            <label>문제 설명</label>
-            <input type="text" id="edit_desc_${idx}" value="${q.desc}">
-            <label>힌트 문구</label>
-            <input type="text" id="edit_hint_${idx}" value="${q.hint}">
-            <label>정답</label>
-            <input type="text" id="edit_ans_${idx}" value="${q.answer}">
-          </div>
-        `;
-      });
-    }
-
-    function saveQuestions() {
-      try {
-        questions.forEach((q, idx) => {
-          q.question = document.getElementById(`edit_title_${idx}`).value;
-          q.desc = document.getElementById(`edit_desc_${idx}`).value;
-          q.hint = document.getElementById(`edit_hint_${idx}`).value;
-          q.answer = document.getElementById(`edit_ans_${idx}`).value;
-        });
-
-        localStorage.setItem('training_questions', JSON.stringify(questions));
-        alert("문제가 정상적으로 저장되었습니다!");
-        closeModal('editModal');
-        
-        if (currentStep >= 0 && currentStep < questions.length) {
-          renderQuestionStep();
-        }
-      } catch (e) {
-        alert("저장 중 오류가 발생했습니다.");
-      }
     }
 
     function renderCompletedTable() {
