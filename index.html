@@ -329,9 +329,9 @@
 
   <script>
     // ==========================================
-    // ⚙️ [설정] 구글 설문지 연동 정보
+    // ⚙️ [설정 완료] 공개용 FORM_ID 연동
     // ==========================================
-    const FORM_ID = "1HgeVhSOF87sS2nYXcT-eU-3uzy-CFiIyoPU3tiLm348";
+    const FORM_ID = "1FAIpQLSdBRVpLnFg-xsQwvz0fKDqSgzPQMP7VhGUH-QARq_3VkPkGeg";
     const ENTRY_ID = "entry.808143547";
     const ADMIN_PASSWORD = "4681";
 
@@ -479,7 +479,7 @@
       `;
     }
 
-    // ★ 구글 설문지 전송 핵심 함수 (404 경로 수정완료)
+    // ★ 구글 설문지 정식 경로(/d/e/FORM_ID/formResponse)를 통한 전송
     function saveCompletionRecord(name) {
       if (!name) return;
 
@@ -494,8 +494,8 @@
         console.error("로컬 저장 오류:", e);
       }
 
-      // 2. 구글 설문지 백엔드로 실시간 전송 (올바른 경로 적용)
-      const formUrl = `https://docs.google.com/forms/d/${FORM_ID}/formResponse`;
+      // 2. 구글 설문지 백엔드로 실시간 전송
+      const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse`;
       
       let iframe = document.getElementById('hidden_iframe');
       if (!iframe) {
