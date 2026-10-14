@@ -231,19 +231,6 @@
       cursor: pointer;
     }
 
-    .edit-group {
-      margin-bottom: 20px;
-      padding-bottom: 15px;
-      border-bottom: 1px dashed rgba(255,255,255,0.1);
-    }
-
-    .edit-group label {
-      display: block;
-      font-size: 0.85rem;
-      color: #94a3b8;
-      margin-bottom: 5px;
-    }
-
     .table-container {
       overflow-x: auto;
     }
@@ -316,12 +303,12 @@
 
   <script>
     // ==========================================
-    // 🚀 [구글 앱스 스크립트 웹 앱 URL 및 문제 데이터 고정]
+    // 🚀 [신규 구글 앱스 스크립트 웹 앱 URL 적용]
     // ==========================================
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx8iWp4mRJ_UXG4Hx23hcAh-MbDOl_ttiP4r5hs7BhNNzWxwB1NVdYFLXevj7C4QUXg/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby9cesbNrczm39t-_zEpDqcrv-2Pd2dN3JABZ8cA8foVPwlNCf-Dwl_mJ7fXEaqb6Zc/exec";
     const ADMIN_PASSWORD = "4681";
 
-    // 이전 캐시 무시를 위해 localStorage를 거치지 않고 이 문제를 직결로 사용
+    // 식행동 퀴즈 데이터 고정
     const questions = [
       {
         question: "1번 문제",
@@ -346,7 +333,7 @@
       }
     ];
 
-    // 실행 시 이전 저장값 무조건 지우기
+    // 실행 시 구버전 로컬 문제 데이터 자동 삭제
     localStorage.removeItem('training_questions');
 
     let currentStep = 0;
