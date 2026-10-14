@@ -260,7 +260,7 @@
     <button class="admin-btn" onclick="openModal('listModal')">📊 완료자 명단(내 PC)</button>
   </div>
 
-  <!-- Main Card -->
+  <!-- Main Container -->
   <div class="container" id="quizCard">
     <div class="progress-bar" id="progressBar">
       <div class="step-dot active"></div>
@@ -303,12 +303,12 @@
 
   <script>
     // ==========================================
-    // 🚀 [신규 구글 앱스 스크립트 웹 앱 URL 적용]
+    // 🚀 [최종 연동된 구글 앱스 스크립트 웹 앱 URL]
     // ==========================================
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbySxegFvjQOnIPCz5VsK18OaxVpTmMpVAwjWVIU8Zd-jxjm-Rb7eu97mWc7P8fj0-M/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw37LbhC0vSi1Ry4Ic7nXuY8dnE7SA0Lgc38ckOXX4vjs4umB4nB88F88FBX-FAh07Q/exec";
     const ADMIN_PASSWORD = "4681";
 
-    // 식행동 퀴즈 데이터 고정
+    // 식행동 퀴즈 데이터
     const questions = [
       {
         question: "1번 문제",
@@ -333,7 +333,7 @@
       }
     ];
 
-    // 실행 시 구버전 로컬 문제 데이터 자동 삭제
+    // 기존 브라우저에 남아있을 수 있는 옛 문제 데이터 삭제
     localStorage.removeItem('training_questions');
 
     let currentStep = 0;
@@ -437,6 +437,7 @@
     function saveCompletionRecord(name) {
       if (!name) return;
 
+      // 1. 브라우저 로컬 저장소에 백업
       try {
         let records = JSON.parse(localStorage.getItem('training_completed_users')) || [];
         const now = new Date();
@@ -447,34 +448,49 @@
         console.error("로컬 저장 오류:", e);
       }
 
-      let iframe = document.getElementById('gas_hidden_iframe');
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.name = 'gas_hidden_iframe';
-        iframe.id = 'gas_hidden_iframe';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
+      // 2. 구글 시트로 데이터 전송 (GET 방식 - Image Beacon)
+      try {
+        const encodedName = encodeURIComponent(name);
+        const targetUrl = `${GAS_WEB_APP_URL}?name=${encodedName}&t=${new Date().getTime()}`;
+        const img = new Image();
+        img.src = targetUrl;
+      } catch(e) {
+        console.error("Image beacon 전송 오류:", e);
       }
 
-      const form = document.createElement('form');
-      form.action = GAS_WEB_APP_URL;
-      form.method = 'POST';
-      form.target = 'gas_hidden_iframe';
-
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'name';
-      input.value = name;
-
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
-
-      setTimeout(() => {
-        if (form && form.parentNode) {
-          document.body.removeChild(form);
+      // 3. 구글 시트로 데이터 전송 (POST 방식 - Hidden Form)
+      try {
+        let iframe = document.getElementById('gas_hidden_iframe');
+        if (!iframe) {
+          iframe = document.createElement('iframe');
+          iframe.name = 'gas_hidden_iframe';
+          iframe.id = 'gas_hidden_iframe';
+          iframe.style.display = 'none';
+          document.body.appendChild(iframe);
         }
-      }, 1000);
+
+        const form = document.createElement('form');
+        form.action = GAS_WEB_APP_URL;
+        form.method = 'POST';
+        form.target = 'gas_hidden_iframe';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'name';
+        input.value = name;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+
+        setTimeout(() => {
+          if (form && form.parentNode) {
+            document.body.removeChild(form);
+          }
+        }, 1000);
+      } catch(e) {
+        console.error("Form 전송 오류:", e);
+      }
     }
 
     function openModal(modalId) {
